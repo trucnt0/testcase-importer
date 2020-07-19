@@ -3,8 +3,10 @@
 {% block content %}
 <h3>Testcases Summary</h3>
 <hr>
-<a href="#" data-action='add' onclick="onCreatNew(this)" class="btn btn-success"><span><i class="fa fa-plus-circle"></i>
-        Create</span></a>
+<a href="#" data-action='add' class="btn btn-success" data-testcaseid="0" data-toggle="modal"
+    data-target="#modalTestCaseDetails">
+    <span><i class="fa fa-plus-circle"></i> Create</span>
+</a>
 
 <table class="table table-responsive table-striped">
     <thead>
@@ -15,6 +17,7 @@
             <th scope="col">Project</th>
             <th scope="col">Status</th>
             <th scope="col">Assignee</th>
+            <th scope="col">Created Date</th>
             <th style="text-align: center" scope="col">Action</th>
         </tr>
     </thead>
@@ -25,14 +28,18 @@
             <td>{{tc.title}}</td>
             <td>{{tc.reproduce_step}}</td>
             <td>{{tc.project.name}}</td>
-            <td>{{tc.status.name}}</td>
+            <td>                
+                <span class="badge rounded-pill {% if tc.status.id == 1 %} bg-danger {% else %} bg-success {% endif %}">{{tc.status.name}}</span>                
+            </td>
             <td>{{tc.assignee.first_name}} {{tc.assignee.last_name}}</td>
+            <td>{{tc.created_date}}</td>
             <td style="text-align: center">
-                <button class="btn btn-danger"><span><i class="fa fa-trash-o"></i></span></button>
-                <button class="btn btn-primary" data-testcaseid="{{tc.id}}" data-toggle="modal"
+                <a class="btn btn-danger" href="#" onclick="onConfirmDelete({{tc.id}})"><span><i
+                            class="fa fa-trash-o"></i></span></a>
+                <a class="btn btn-primary" data-testcaseid="{{tc.id}}" data-toggle="modal"
                     data-target="#modalTestCaseDetails">
                     <span><i class="fa fa-pencil-square-o"></i></span>
-                </button>
+                </a>
             </td>
         </tr>
         {% endfor %}
@@ -103,17 +110,23 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"><span><i
                                 class="fa fa-times-circle-o"></i> Cancel</span></button>
-                    <button name='action' type="submit" class="btn btn-primary" value="add">
-                        <span><i class="fa fa-save"></i> Save</span>
+                    <button id='btnAdd' name='action' type="submit" class="btn btn-primary" value="add">
+                        <span><i class="fa fa-save"></i> Add</span>
                     </button>
-                    <button name='action' type="submit" class="btn btn-primary" value="edit">
-                        <span><i class="fa fa-save"></i> Edit</span>
+                    <button id='btnUpdate' name='action' type="submit" class="btn btn-primary" value="edit">
+                        <span><i class="fa fa-save"></i> Update</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="dialog-confirm" title="Delete the testcase?" style="display:none">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be
+            permanently deleted and cannot be recovered. Are you sure?</p>
+    </div>
 </form>
+
 
 <script>
     var modalTestCaseDetails = $('#modalTestCaseDetails'),
@@ -132,9 +145,20 @@
     }
 
     function onModalShown(e) {
-        var testcaseID = $(e.relatedTarget).data('testcaseid');
-        $('#hdnTestCaseID').val(testcaseID);        
-        $('#modalTestCaseDetailsLabel').text('Edit Test Case');
+        var testcaseID = Number($(e.relatedTarget).data('testcaseid'));
+        $('#hdnTestCaseID').val(testcaseID);
+
+        if (testcaseID) {
+            $('#btnAdd').hide();
+            $('#btnUpdate').show();
+            $('#modalTestCaseDetailsLabel').text('Update test case');
+        }
+        else {
+            $('#btnUpdate').hide();
+            $('#btnAdd').show();
+            $('#modalTestCaseDetailsLabel').text('Create test case');
+        }
+
         $.ajax({ url: `/${testcaseID}`, method: 'GET' })
             .then(function (response) {
                 var tc = response[0].fields;
@@ -147,13 +171,6 @@
             });
     }
 
-    function onCreatNew(sender) {
-        $('#errorMsg').hide();
-        $('#hdnTestCaseID').val(0);
-        $('#modalTestCaseDetailsLabel').text('Create Test Case');
-        modalTestCaseDetails.modal();
-    }
-
     function isValid() {
         return title.val() && steps.val();
     }
@@ -164,6 +181,25 @@
             return false;
         }
         return true;
+    }
+
+    function onConfirmDelete(id) {
+        var res = $("#dialog-confirm").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            buttons: {
+                "Yes": function () {
+                    location.href = `/delete/${id}`;
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        })
+
+        debugger;
     }
 
 </script>

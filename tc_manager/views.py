@@ -45,8 +45,13 @@ def save(request):
             id = request.POST.get('testcaseID')
             edit_test_case(id, testcase)
         elif action == 'add':
-            create_test_case(testcase)
-        
+            create_test_case(testcase)        
+    return redirect('/')
+
+def delete(request, testcase_id):
+    print('Process delete', testcase_id)
+    tc = TestCase.objects.filter(pk=testcase_id).first()
+    tc.delete()
     return redirect('/')
 
 def edit_test_case(id, model):
