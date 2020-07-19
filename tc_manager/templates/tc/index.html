@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Testcase Manager Summary</h3>
+<hr>
+<a href="#" data-action='add' onclick="onNewTestCaseClicked(this)" class="btn btn-success">Create Test Case</a>
+<input type="hidden" name="hdnTestCaseID">
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Title</th>
+            <th scope="col">Description</th>
+            <th scope="col">Project</th>
+            <th scope="col">Status</th>
+            <th scope="col">Assignee</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tc in test_cases %}
+        <tr>
+            <th scope="row">{{tc.id}}</th>
+            <td>{{tc.title}}</td>
+            <td>{{tc.reproduce_step}}</td>
+            <td>{{tc.project.name}}</td>
+            <td>{{tc.status.name}}</td>
+            <td>{{tc.assignee.first_name}} {{tc.assignee.last_name}}</td>
+            <td>
+                <button class="btn btn-danger">Delete</button>
+                <button class="btn btn-primary">Edit</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<form name="frmTCDetails" action="/create" method="POST">
+    <div class="modal fade" id="modalTCDetail" tabindex="-1" aria-labelledby="modalTCDetailLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTCDetailLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="txtTitle">Title (*)</label>
+                            <input name="title" type="text" class="form-control" id="txtTitle" />
+                        </div>
+                        <div class="form-group">
+                            <label for="txtSteps">Steps (*)</label>
+                            <textarea name="steps" class="form-control" id="txtSteps" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="slPriority">Priority</label>
+                            <select name="priority" class="form-control" id="slPriority">
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="slProject">Projects</label>
+                            <select name="projectID" class="form-control" id="slProject">
+                                {% for p in projects %}
+                                <option value="{{p.id}}">{{p.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group" id="tcStatus">
+                            <label for="slStatus">Status</label>
+                            <select name="statusID" class="form-control" id="slStatus">
+                                {% for s in status %}
+                                <option value="{{s.id}}">{{s.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="slAssignee">Assignees</label>
+                            <select name="assigneeID" class="form-control" id="slAssignee">
+                                {% for user in assignees %}
+                                <option value="{{user.id}}">{{user.first_name}} {{user.last_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <br>
+                        <div id="errorMsg" class="alert alert-danger" role="alert">
+                            Please fill all the required (*) fields
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var modalTCDetail = $('#modalTCDetail'),
+        title = $('#txtTitle'),
+        steps = $('#txtSteps'),
+        priority = $('#slPriority'),
+        project = $('#slProject'),
+        status = $('#slStatus'),
+        assignee = $('#slAssignee'),
+        frmTestCaseDetails = $('#frmTestCaseDetails');
+
+    init();
+
+    function init() {
+        $('#tcStatus').hide();
+        $('#errorMsg').hide();
+    }
+
+    function onNewTestCaseClicked(sender) {
+        $('#errorMsg').hide();
+        $('#modalTCDetailLabel').text('Add New Testcase');
+        $('#hdnTestCaseID').val(0);
+        modalTCDetail.modal();
+    }
+
+    function isValid() {
+        return title.val() && steps.val();
+    }
+
+    function onSaveChange(sender) {
+        if (!isValid()) {
+            $('#errorMsg').show();
+            return;
+        }
+
+        var currentTestCaseID = $('#hdnTestCaseID').val();
+        // if (currentTestCaseID) {
+        //     //EDIT
+        // }
+        // else {
+        //     $.ajax({
+        //         url: '/create_test_case',
+        //         method: 'POST',
+        //         data: {
+        //             title: title.val(),
+        //             steps: steps.val(),
+        //             projectID: project.val(),
+        //             assigneeID: assignee.val()
+        //         }
+        //     }).then(function(response){
+        //         frmTestCases.submit();
+        //     }).fail(function(error){
+        //         console.error(error);
+        //     })
+        // }
+    }
+
+</script>
+
+{% endblock %}

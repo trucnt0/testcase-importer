@@ -15,6 +15,6 @@ class TestCase(models.Model):
     reproduce_step = models.CharField(max_length=1000)
     priority = models.IntegerField
     created_date = models.DateTimeField
-    project_id = models.ForeignKey(Project, on_delete=models.DO_NOTHING)
+    project = models.ForeignKey(Project, on_delete=models.DO_NOTHING)
     assignee = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     status = models.ForeignKey(TestCaseStatus, on_delete=models.DO_NOTHING)
